@@ -1,5 +1,7 @@
-import { useNavigate } from "react-router-dom";
-import PlanCard from "../components/PlanCard";
+// src/pages/Home.jsx
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import PlanCard from '../components/PlanCard';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -31,7 +33,7 @@ const Home = () => {
               height="h-[520px]"
               hoverTranslate="hover:-translate-y-44"
               bgColor="bg-pastelBlue"
-              onClick={() => navigate("/sport-plan-type")}
+              onClick={() => navigate("/sports")}
             />
           </div>
 
@@ -44,7 +46,7 @@ const Home = () => {
               height="h-[520px]"
               hoverTranslate="hover:-translate-y-40"
               bgColor="bg-pastelGreen"
-              onClick={() => navigate("/lesson-plan-type")} /* İleride eklenecek rota */
+              onClick={() => navigate("/lesson-plan")} /* Güncel rota */
             />
           </div>
 

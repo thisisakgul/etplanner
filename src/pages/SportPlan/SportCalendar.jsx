@@ -1,58 +1,48 @@
-import { useLocation } from "react-router-dom";
-
-const days = ["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"];
+// src/pages/SportPlan/SportCalendar.jsx
+import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function SportCalendar() {
   const { state } = useLocation();
-  const { program = [], view } = state || {};
+  const navigate = useNavigate();
 
-  if (!program.length) {
-    return <p className="p-6">Gösterilecek program yok.</p>;
-  }
+  // Önce route state’inden, yoksa localStorage’dan al
+  const storedPlan = state?.plan
+    ? state.plan
+    : JSON.parse(localStorage.getItem('sportPremiumPlan') || 'null');
 
-  if (view === "weekly") {
+  if (!storedPlan) {
     return (
-      <div className="max-w-screen-lg mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-4 text-center">Haftalık Program</h1>
-        <div className="grid grid-cols-7 gap-2 text-center font-medium mb-2">
-          {days.map(d => <div key={d}>{d}</div>)}
-        </div>
-        <div className="grid grid-cols-7 gap-2">
-          {program.map((task, i) => (
-            <div
-              key={i}
-              className="p-3 border rounded min-h-[100px] bg-blue-50"
-            >
-              {task}
-            </div>
-          ))}
+      <div className="max-w-screen-md mx-auto p-6 text-center text-gray-600">
+        Gösterilecek program yok.
+        <div className="mt-4">
+          <button
+            onClick={() => navigate('/sports')}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Yeni Plan Oluştur
+          </button>
         </div>
       </div>
     );
   }
 
-  // monthly
-  const weeks = [];
-  for (let i = 0; i < program.length; i += 7) {
-    weeks.push(program.slice(i, i + 7));
-  }
-
   return (
-    <div className="max-w-screen-lg mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4 text-center">Aylık Program</h1>
-      {weeks.map((week, wi) => (
-        <div key={wi} className="mb-6">
-          <h2 className="font-semibold mb-2">{wi + 1}. Hafta</h2>
-          <div className="grid grid-cols-7 gap-2">
-            {week.map((task, ti) => (
-              <div
-                key={ti}
-                className="p-3 border rounded min-h-[100px] bg-green-50"
-              >
-                {task}
-              </div>
+    <div className="max-w-screen-md mx-auto p-6 space-y-6">
+      <h2 className="text-2xl font-bold text-center">Haftalık Spor Programınız</h2>
+      {storedPlan.program.map((block, idx) => (
+        <div key={idx} className="border rounded-lg p-4 bg-white shadow">
+          <h3 className="text-lg font-semibold mb-2">
+            {block.day} — {block.modality}
+          </h3>
+          <ul className="list-disc pl-5 space-y-1">
+            {block.exercises.map((ex, j) => (
+              <li key={j}>
+                {ex.name} — {ex.sets}×{ex.reps}
+                {ex.unit ? ` ${ex.unit}` : ''}
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       ))}
     </div>
