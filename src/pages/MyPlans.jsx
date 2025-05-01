@@ -1,10 +1,13 @@
 // src/pages/MyPlans.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../contexts/ToastContext";
 
 export default function MyPlans() {
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const [plans, setPlans] = useState([]);
+  const [filter, setFilter] = useState("all"); // "all" | "sport" | "lesson" | "wedding"
 
   useEffect(() => {
     const loaded = [];
@@ -16,6 +19,7 @@ export default function MyPlans() {
       loaded.push({
         key: "weddingPlan",
         type: "Düğün Planı",
+        category: "wedding",
         startDate: p.startDate,
         endDate: p.endDate,
         createdAt: p.createdAt,
@@ -31,12 +35,12 @@ export default function MyPlans() {
       loaded.push({
         key: "sportBasicPlan",
         type: "Spor Planı (Basic)",
-        // eğer tarihler varsa:
+        category: "sport",
         startDate: p.startDate,
         endDate: p.endDate,
         createdAt: p.createdAt,
         route: "/sports/calendar",
-        state: { plan: p }
+        state: { plan: p.plan }
       });
     }
 
@@ -47,9 +51,10 @@ export default function MyPlans() {
       loaded.push({
         key: "sportPremiumPlan",
         type: "Spor Planı (Premium)",
+        category: "sport",
         createdAt: p.createdAt,
         route: "/sports/calendar",
-        state: { plan: p }
+        state: { schedule: p.schedule }
       });
     }
 
@@ -60,9 +65,10 @@ export default function MyPlans() {
       loaded.push({
         key: "lessonBasicPlan",
         type: "Ders Planı (Basic)",
+        category: "lesson",
         createdAt: p.createdAt,
         route: "/lesson-calendar",
-        state: { plan: p }
+        state: { plan: p.plan }
       });
     }
 
@@ -73,14 +79,54 @@ export default function MyPlans() {
       loaded.push({
         key: "lessonPremiumPlan",
         type: "Ders Planı (Premium)",
+        category: "lesson",
         createdAt: p.createdAt,
         route: "/lesson-calendar",
-        state: { plan: p }
+        state: { schedule: p.schedule }
       });
     }
 
     setPlans(loaded);
   }, []);
+
+  // Plan silme
+  const handleDelete = key => {
+    if (!window.confirm("Bu planı gerçekten silmek istiyor musunuz?")) return;
+    localStorage.removeItem(key);
+    setPlans(prev => prev.filter(p => p.key !== key));
+    addToast("Plan başarıyla silindi", "success");
+  };
+
+  // Plan düzenleme
+  const handleEdit = plan => {
+    switch (plan.category) {
+      case "sport":
+        navigate(
+          plan.key.includes("Premium") ? "/sports/premium" : "/sports/basic",
+          { state: plan.state }
+        );
+        break;
+      case "lesson":
+        navigate(
+          plan.key.includes("Premium")
+            ? "/lesson-plan/premium"
+            : "/lesson-plan/basic",
+          { state: plan.state }
+        );
+        break;
+      case "wedding":
+        navigate("/wedding-setup", { state: plan.state });
+        break;
+      default:
+        return;
+    }
+    addToast("Düzenleme sayfasına yönlendiriliyorsunuz", "success");
+  };
+
+  // Filtrelenmiş planlar
+  const filtered = plans.filter(p =>
+    filter === "all" ? true : p.category === filter
+  );
 
   if (plans.length === 0) {
     return (
@@ -93,8 +139,32 @@ export default function MyPlans() {
   return (
     <div className="max-w-screen-lg mx-auto px-6 py-10">
       <h1 className="text-2xl font-bold mb-6">Planlarım</h1>
+
+      {/* Filtreleme butonları */}
+      <div className="flex space-x-4 mb-6">
+        {[
+          { label: "Tümü", value: "all" },
+          { label: "Spor", value: "sport" },
+          { label: "Ders", value: "lesson" },
+          { label: "Düğün", value: "wedding" }
+        ].map(f => (
+          <button
+            key={f.value}
+            onClick={() => setFilter(f.value)}
+            className={`px-4 py-1 rounded ${
+              filter === f.value
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Plan kartları */}
       <div className="space-y-4">
-        {plans.map(plan => (
+        {filtered.map(plan => (
           <div
             key={plan.key}
             onClick={() => navigate(plan.route, { state: plan.state })}
@@ -112,7 +182,26 @@ export default function MyPlans() {
                 {new Date(plan.createdAt).toLocaleDateString("tr-TR")}
               </p>
             </div>
-            <button className="text-blue-600 hover:underline">Görüntüle</button>
+            <div className="flex space-x-2">
+              <button
+                onClick={e => {
+                  e.stopPropagation();
+                  handleEdit(plan);
+                }}
+                className="px-3 py-1 bg-yellow-400 text-gray-800 rounded hover:bg-yellow-500"
+              >
+                Düzenle
+              </button>
+              <button
+                onClick={e => {
+                  e.stopPropagation();
+                  handleDelete(plan.key);
+                }}
+                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Sil
+              </button>
+            </div>
           </div>
         ))}
       </div>

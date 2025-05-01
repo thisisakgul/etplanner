@@ -3,9 +3,35 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/* index.css */
-body, html {
-    margin: 0;
-    padding: 0;
-  }
-  
+
+/* Google Translate dropdown küçültme & stil */
+.translate-dropdown {
+  @apply inline-block align-middle;
+}
+.translate-dropdown .goog-te-gadget-simple {
+  @apply p-0 m-0 bg-transparent border-0;
+}
+.translate-dropdown select.goog-te-combo {
+  /* arkaplan, kenarlık, yazı */
+  @apply bg-transparent border-none text-gray-800 dark:text-white text-sm cursor-pointer;
+  /* biraz boyut küçültme */
+  font-size: 0.85rem;
+  padding: 0.25rem;
+  margin-right: 0;
+}
+.translate-dropdown .goog-logo-link,
+.translate-dropdown .goog-te-gadget-icon {
+  display: none !important;
+}
+
+/* body arkaplanı, gece/gündüz */
+body {
+  @apply bg-[#EFF6FF] dark:bg-gray-900 transition-colors;
+}
+
+/* Navbar altında kalan çerçeve vb. */
+.app-frame {
+  @apply max-w-screen-xl mx-auto py-8 px-4;
+}
+
+/* Eğer başka global override gerekirse buraya ekleyebilirsiniz */

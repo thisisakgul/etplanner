@@ -1,42 +1,53 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* 1) Gece gökyüzü ve yıldız deseni */
+.bg-night-sky {
+  background-color: #0d1b2a; /* koyu mavi ton */
+  background-image:
+    url('/stars.svg'),
+    linear-gradient(to bottom, #0d1b2a 0%, #1b263b 50%, #415a77 100%);
+  background-repeat: repeat, no-repeat;
+  background-size: auto, cover;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* 2) Alt bulut katmanı container’ı */
+.clouds-wrapper {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* 3) Alt bulut silueti (arka plan) */
+.clouds-back {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 120%;
+  opacity: 0.5;
+  transform: translateX(-10%) scale(1.1);
+  z-index: 1;
 }
 
-.card {
-  padding: 2em;
+/* 4) Alt bulut silueti (ön plan) */
+.clouds-front {
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 110%;
+  opacity: 0.8;
+  transform: translateX(0) scale(1.05);
+  z-index: 2;
 }
 
-.read-the-docs {
-  color: #888;
+/* İsteğe bağlı: yatayda hafif kayan animasyon */
+/*
+@keyframes drift {
+  from { transform: translateX(0) scale(1.05); }
+  to   { transform: translateX(-5%) scale(1.05); }
 }
+.clouds-front { animation: drift 30s linear infinite alternate; }
+.clouds-back  { animation: drift 60s linear infinite alternate-reverse; }
+*/

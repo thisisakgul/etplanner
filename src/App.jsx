@@ -1,66 +1,152 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import PrivateRoute from './components/PrivateRoute';
+import { ThemeContext } from './main.jsx';
 
-import Navbar            from './components/Navbar';
-import Home              from './pages/Home';
-import MyPlans           from './pages/MyPlans';
+// Auth & Subscribe
+import Login    from './pages/Auth/Login';
+import Register from './pages/Auth/Register';
+import Subscribe from './pages/Subscribe';
+import Checkout  from './pages/Checkout';
 
-// — Spor Planı —
-import SportPlanType     from './pages/SportPlan/SportPlanType';
-import SportBasicPlan    from './pages/SportPlan/SportBasicPlan';
+// Public Basic
+import Home             from './pages/Home';
+import SportPlanType    from './pages/SportPlan/SportPlanType';
+import SportBasicPlan   from './pages/SportPlan/SportBasicPlan';
+import LessonPlanType   from './pages/LessonPlan/LessonPlanType';
+import LessonBasicPlan  from './pages/LessonPlan/LessonBasicPlan';
+import WeddingPlanType  from './pages/WeddingPlan/WeddingPlanType';
+import WeddingBasicPlan from './pages/WeddingPlan/WeddingBasicPlan';
+import LessonCalendar   from './pages/LessonPlan/LessonCalendar';
+
+// Premium & MyPlans
 import SportPremiumPlan  from './pages/SportPlan/SportPremiumPlan';
 import SportCalendar     from './pages/SportPlan/SportCalendar';
-
-// — Düğün Planı —
-import WeddingPlanType   from './pages/WeddingPlan/WeddingPlanType';
-import WeddingBasicPlan  from './pages/WeddingPlan/WeddingBasicPlan';
+import LessonPremiumPlan from './pages/LessonPlan/LessonPremiumPlan';
 import WeddingPlanSetup  from './pages/WeddingPlan/WeddingPlanSetup';
 import WeddingCalendar   from './pages/WeddingPlan/WeddingCalendar';
 import MonthlyTaskView   from './pages/WeddingPlan/MonthlyTaskView';
+import MyPlans           from './pages/MyPlans';
 
-// — Ders Planı —
-import LessonPlanType    from './pages/LessonPlan/LessonPlanType';
-import LessonBasicPlan   from './pages/LessonPlan/LessonBasicPlan';
-import LessonPremiumPlan from './pages/LessonPlan/LessonPremiumPlan';
-import LessonCalendar    from './pages/LessonPlan/LessonCalendar';
+// Yeni eklenen sayfalar
+import About   from './pages/About';
+import Contact from './pages/Contact';
 
 export default function App() {
+  const { darkMode } = useContext(ThemeContext);
+
   return (
-    <Router>
+    <div
+      className={`
+        relative min-h-screen
+        ${darkMode ? 'bg-gray-900' : 'bg-blue-50'}
+        transition-colors duration-300
+      `}
+    >
       <Navbar />
 
-      <Routes>
-        {/* Ana Sayfa */}
-        <Route path="/" element={<Home />} />
+      <div className="max-w-screen-xl mx-auto py-8 px-4">
+        <Routes>
+          {/* 🏠 Public Basic */}
+          <Route path="/" element={<Home />} />
+          <Route path="/about"   element={<About />} />
+          <Route path="/contact" element={<Contact />} />
 
-        {/* Planlarım */}
-        <Route path="/my-plans" element={<MyPlans />} />
+          {/* 👤 Auth */}
+          <Route path="/login"    element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        {/* Spor Planı */}
-        <Route path="/sports"          element={<SportPlanType    />} />
-        <Route path="/sports/basic"    element={<SportBasicPlan   />} />
-        <Route path="/sports/premium"  element={<SportPremiumPlan />} />
-        <Route path="/sports/calendar" element={<SportCalendar    />} />
+          {/* 💳 Subscribe / Checkout */}
+          <Route path="/subscribe" element={<Subscribe />} />
+          <Route
+            path="/checkout"
+            element={
+              <PrivateRoute requirePremium>
+                <Checkout />
+              </PrivateRoute>
+            }
+          />
 
-        {/* Düğün Planı */}
-        <Route path="/wedding-plan-type"  element={<WeddingPlanType  />} />
-        <Route path="/wedding-basic"      element={<WeddingBasicPlan />} />
-        <Route path="/wedding-setup"      element={<WeddingPlanSetup />} />
-        <Route path="/wedding-calendar"   element={<WeddingCalendar  />} />
-        <Route
-          path="/wedding-calendar/:year/:month"
-          element={<MonthlyTaskView />}
-        />
+          {/* 📂 Ücretsiz Planlar */}
+          <Route path="/sports"           element={<SportPlanType />} />
+          <Route path="/sports/basic"     element={<SportBasicPlan />} />
+          <Route path="/lesson-plan"      element={<LessonPlanType />} />
+          <Route path="/lesson-plan/basic" element={<LessonBasicPlan />} />
+          <Route path="/wedding-plan-type" element={<WeddingPlanType />} />
+          <Route path="/wedding-basic"     element={<WeddingBasicPlan />} />
+          <Route path="/lesson-calendar"   element={<LessonCalendar />} />
 
-        {/* Ders Planı */}
-        <Route path="/lesson-plan-type"   element={<LessonPlanType    />} />
-        <Route path="/lesson-basic"       element={<LessonBasicPlan   />} />
-        <Route path="/lesson-premium"     element={<LessonPremiumPlan />} />
-        <Route path="/lesson-calendar"    element={<LessonCalendar    />} />
+          {/* 🔒 Premium & MyPlans */}
+          <Route
+            path="/sports/premium"
+            element={
+              <PrivateRoute requirePremium>
+                <SportPremiumPlan />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/sports/calendar"
+            element={
+              <PrivateRoute requirePremium>
+                <SportCalendar />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/lesson-plan/premium"
+            element={
+              <PrivateRoute requirePremium>
+                <LessonPremiumPlan />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/lesson-plan/calendar"
+            element={
+              <PrivateRoute requirePremium>
+                <LessonCalendar />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/wedding-setup"
+            element={
+              <PrivateRoute requirePremium>
+                <WeddingPlanSetup />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/wedding-calendar"
+            element={
+              <PrivateRoute requirePremium>
+                <WeddingCalendar />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/wedding-calendar/:year/:month"
+            element={
+              <PrivateRoute requirePremium>
+                <MonthlyTaskView />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/myplans"
+            element={
+              <PrivateRoute>
+                <MyPlans />
+              </PrivateRoute>
+            }
+          />
 
-        {/* Bilinmeyen URL’ler → Anasayfa */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+          {/* 🚨 Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+    </div>
   );
 }

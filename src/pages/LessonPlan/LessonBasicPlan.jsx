@@ -1,6 +1,8 @@
 // src/pages/LessonPlan/LessonBasicPlan.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../../contexts/ToastContext";
+import Spinner from "../../components/Spinner";
 
 const grades = {
   ortaokul: ["Matematik","Fen Bilimleri","Türkçe","Sosyal Bilgiler","İngilizce","Beden Eğitimi"],
@@ -10,8 +12,10 @@ const days = ["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","P
 
 export default function LessonBasicPlan() {
   const navigate = useNavigate();
-  const [level, setLevel]         = useState(null);
-  const [selected, setSelected]   = useState([]);
+  const { addToast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [level, setLevel] = useState(null);
+  const [selected, setSelected] = useState([]);
   const [newCourse, setNewCourse] = useState("");
 
   const toggle = sub => {
@@ -19,6 +23,7 @@ export default function LessonBasicPlan() {
       sel.includes(sub) ? sel.filter(x => x !== sub) : [...sel, sub]
     );
   };
+
   const handleKeyDown = e => {
     if (e.key === "Enter" && newCourse.trim()) {
       e.preventDefault();
@@ -28,15 +33,16 @@ export default function LessonBasicPlan() {
       setNewCourse("");
     }
   };
+
   const removeCourse = c => setSelected(sel => sel.filter(x => x !== c));
 
   const buildPlan = () => {
+    setLoading(true);
     const plan = {};
     days.forEach(day => {
       plan[day] = [...selected];
     });
 
-    // **KAYDET**
     localStorage.setItem(
       "lessonBasicPlan",
       JSON.stringify({
@@ -48,7 +54,11 @@ export default function LessonBasicPlan() {
       })
     );
 
-    navigate("/lesson-calendar", { state: { plan } });
+    setTimeout(() => {
+      setLoading(false);
+      addToast("Basic ders planı oluşturuldu", "success");
+      navigate("/lesson-calendar", { state: { plan } });
+    }, 500);
   };
 
   if (!level) {
@@ -71,58 +81,61 @@ export default function LessonBasicPlan() {
   }
 
   return (
-    <div className="max-w-screen-md mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        {level === "ortaokul"
-          ? "Ortaokul Dersleri"
-          : level === "lise"
-          ? "Lise Dersleri"
-          : "Üniversite Dersleri"}
-      </h2>
+    <>
+      {loading && <Spinner />}
+      <div className="max-w-screen-md mx-auto p-6">
+        <h2 className="text-2xl font-bold mb-4 text-center">
+          {level === "ortaokul"
+            ? "Ortaokul Dersleri"
+            : level === "lise"
+            ? "Lise Dersleri"
+            : "Üniversite Dersleri"}
+        </h2>
 
-      {level === "universite" ? (
-        <>
-          <label className="block mb-2">Ders ekleyin ve Enter’a basın</label>
-          <input
-            type="text"
-            value={newCourse}
-            onChange={e => setNewCourse(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Örn: Veri Yapıları"
-            className="w-full border rounded p-2 mb-4"
-          />
-          <div className="flex flex-wrap gap-2 mb-6">
-            {selected.map((c,i) => (
-              <span key={i} className="flex items-center bg-blue-200 text-blue-800 px-3 py-1 rounded-full">
-                {c}
-                <button onClick={() => removeCourse(c)} className="ml-2 font-bold">×</button>
-              </span>
+        {level === "universite" ? (
+          <>
+            <label className="block mb-2">Ders ekleyin ve Enter’a basın</label>
+            <input
+              type="text"
+              value={newCourse}
+              onChange={e => setNewCourse(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Örn: Veri Yapıları"
+              className="w-full border rounded p-2 mb-4"
+            />
+            <div className="flex flex-wrap gap-2 mb-6">
+              {selected.map((c,i) => (
+                <span key={i} className="flex items-center bg-blue-200 text-blue-800 px-3 py-1 rounded-full">
+                  {c}
+                  <button onClick={() => removeCourse(c)} className="ml-2 font-bold">×</button>
+                </span>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+            {grades[level].map(sub => (
+              <button
+                key={sub}
+                onClick={() => toggle(sub)}
+                className={`p-3 border rounded ${
+                  selected.includes(sub) ? "bg-yellow-200 border-yellow-500" : "hover:bg-gray-100"
+                }`}
+              >
+                {sub}
+              </button>
             ))}
           </div>
-        </>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-          {grades[level].map(sub => (
-            <button
-              key={sub}
-              onClick={() => toggle(sub)}
-              className={`p-3 border rounded ${
-                selected.includes(sub) ? "bg-yellow-200 border-yellow-500" : "hover:bg-gray-100"
-              }`}
-            >
-              {sub}
-            </button>
-          ))}
-        </div>
-      )}
+        )}
 
-      <button
-        disabled={selected.length === 0}
-        onClick={buildPlan}
-        className="w-full bg-blue-600 text-white rounded py-2 disabled:opacity-50"
-      >
-        Plan Oluştur
-      </button>
-    </div>
+        <button
+          disabled={selected.length === 0 || loading}
+          onClick={buildPlan}
+          className="w-full bg-blue-600 text-white rounded py-2 disabled:opacity-50"
+        >
+          Plan Oluştur
+        </button>
+      </div>
+    </>
   );
 }

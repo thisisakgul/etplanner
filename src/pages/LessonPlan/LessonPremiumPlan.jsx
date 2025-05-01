@@ -1,6 +1,8 @@
 // src/pages/LessonPlan/LessonPremiumPlan.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../../contexts/ToastContext";
+import Spinner from "../../components/Spinner";
 
 const grades = {
   ortaokul: ["Matematik","Fen Bilimleri","Türkçe","Sosyal Bilgiler","İngilizce","Beden Eğitimi"],
@@ -16,8 +18,10 @@ function formatTime(decimalHour) {
 
 export default function LessonPremiumPlan() {
   const navigate = useNavigate();
-  const [level, setLevel]         = useState(null);
-  const [selected, setSelected]   = useState([]);
+  const { addToast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [level, setLevel] = useState(null);
+  const [selected, setSelected] = useState([]);
   const [newCourse, setNewCourse] = useState("");
 
   const toggle = sub => {
@@ -25,6 +29,7 @@ export default function LessonPremiumPlan() {
       sel.includes(sub) ? sel.filter(x => x !== sub) : [...sel, sub]
     );
   };
+
   const handleKeyDown = e => {
     if (e.key === "Enter" && newCourse.trim()) {
       e.preventDefault();
@@ -34,38 +39,43 @@ export default function LessonPremiumPlan() {
       setNewCourse("");
     }
   };
+
   const removeCourse = c => setSelected(sel => sel.filter(x => x !== c));
 
   const buildDetailed = () => {
+    setLoading(true);
     const totalHours = 18 - 10;
-    const count      = selected.length;
+    const count = selected.length;
     const slotLength = totalHours / count;
 
     const schedule = {};
     days.forEach(day => {
       schedule[day] = selected.map((sub,i) => {
         const start = 10 + slotLength * i;
-        const end   = start + slotLength;
+        const end = start + slotLength;
         return {
           subject: sub,
-          time:    `${formatTime(start)} - ${formatTime(end)}`
+          time: `${formatTime(start)} - ${formatTime(end)}`
         };
       });
     });
 
-    // **KAYDET**
     localStorage.setItem(
       "lessonPremiumPlan",
       JSON.stringify({
-        type:     "Premium",
+        type: "Premium",
         level,
-        lessons:  selected,
+        lessons: selected,
         schedule,
         createdAt: new Date().toISOString()
       })
     );
 
-    navigate("/lesson-calendar", { state: { schedule } });
+    setTimeout(() => {
+      setLoading(false);
+      addToast("Premium ders planı oluşturuldu", "success");
+      navigate("/lesson-calendar", { state: { schedule } });
+    }, 500);
   };
 
   if (!level) {
@@ -88,58 +98,61 @@ export default function LessonPremiumPlan() {
   }
 
   return (
-    <div className="max-w-screen-md mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        {level === "ortaokul"
-          ? "Ortaokul Dersleri"
-          : level === "lise"
-          ? "Lise Dersleri"
-          : "Üniversite Dersleri"}
-      </h2>
+    <>
+      {loading && <Spinner />}
+      <div className="max-w-screen-md mx-auto p-6">
+        <h2 className="text-2xl font-bold mb-4 text-center">
+          {level === "ortaokul"
+            ? "Ortaokul Dersleri"
+            : level === "lise"
+            ? "Lise Dersleri"
+            : "Üniversite Dersleri"}
+        </h2>
 
-      {level === "universite" ? (
-        <>
-          <label className="block mb-2">Ders ekleyin ve Enter’a basın</label>
-          <input
-            type="text"
-            value={newCourse}
-            onChange={e => setNewCourse(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Örn: Veri Yapıları"
-            className="w-full border rounded p-2 mb-4"
-          />
-          <div className="flex flex-wrap gap-2 mb-6">
-            {selected.map((c,i) => (
-              <span key={i} className="flex items-center bg-green-200 text-green-800 px-3 py-1 rounded-full">
-                {c}
-                <button onClick={() => removeCourse(c)} className="ml-2 font-bold">×</button>
-              </span>
+        {level === "universite" ? (
+          <>
+            <label className="block mb-2">Ders ekleyin ve Enter’a basın</label>
+            <input
+              type="text"
+              value={newCourse}
+              onChange={e => setNewCourse(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Örn: Veri Yapıları"
+              className="w-full border rounded p-2 mb-4"
+            />
+            <div className="flex flex-wrap gap-2 mb-6">
+              {selected.map((c,i) => (
+                <span key={i} className="flex items-center bg-green-200 text-green-800 px-3 py-1 rounded-full">
+                  {c}
+                  <button onClick={() => removeCourse(c)} className="ml-2 font-bold">×</button>
+                </span>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+            {grades[level].map(sub => (
+              <button
+                key={sub}
+                onClick={() => toggle(sub)}
+                className={`p-3 border rounded ${
+                  selected.includes(sub) ? "bg-yellow-300 border-yellow-500" : "hover:bg-gray-100"
+                }`}
+              >
+                {sub}
+              </button>
             ))}
           </div>
-        </>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-          {grades[level].map(sub => (
-            <button
-              key={sub}
-              onClick={() => toggle(sub)}
-              className={`p-3 border rounded ${
-                selected.includes(sub) ? "bg-yellow-300 border-yellow-500" : "hover:bg-gray-100"
-              }`}
-            >
-              {sub}
-            </button>
-          ))}
-        </div>
-      )}
+        )}
 
-      <button
-        disabled={selected.length === 0}
-        onClick={buildDetailed}
-        className="w-full bg-green-600 text-white rounded py-2 disabled:opacity-50"
-      >
-        Detaylı Plan Oluştur
-      </button>
-    </div>
+        <button
+          disabled={selected.length === 0 || loading}
+          onClick={buildDetailed}
+          className="w-full bg-green-600 text-white rounded py-2 disabled:opacity-50"
+        >
+          Detaylı Plan Oluştur
+        </button>
+      </div>
+    </>
   );
 }
