@@ -1,36 +1,38 @@
 import { useEffect, useState } from 'react';
 
 const Header = () => {
-  const text = "EVERYTHİNG PLANNER";
-  const radius = 500; // Flat curve radius
-  const fontSize = 24;
+  const text = "EVERYTHING PLANNER";
   
+  const radius = 500;          // ← BURAYA DOKUN: Yayın “genişliği” (kavis yarıçapı)
+  const fontSize = 24;         // ← BURAYA DOKUN: Harf boyutu
+
   const [loaded, setLoaded] = useState(false);
-  
   useEffect(() => {
     setLoaded(true);
   }, []);
-  
+
   return (
-    <div className="relative w-full h-32 mx-auto mt-8"> {/* Increased top margin */}
-      
+    // ↑ BURAYA DOKUN: container yüksekliğini arttırıp aşağı indirebilirsin
+    <div className="relative w-full h-40 mx-auto mt-12"> 
       
       {/* The curved text - positioned lower */}
       <div className="relative w-full">
         {text.split("").map((char, index) => {
-          // Calculate position along the curve
           const totalChars = text.length;
-          const angleRange = Math.PI * 0.35; // Controls how much of the arc is used
+          
+          // ↓ BURAYA DOKUN: curve’un açıklığını ayarlar (Math.PI * 0.35 → daha büyük yay)
+          const angleRange = Math.PI * 0.45; 
           const angle = -angleRange/2 + (angleRange * index / (totalChars - 1));
           
           // Calculate x and y positions
-          const x = (radius * Math.sin(angle));
-          const y = radius * (1 - Math.cos(angle)) * 0.25 + 20; // Added offset to move text down
+          const x = radius * Math.sin(angle);
+          // ↓ BURAYA DOKUN: y çarpanı ve +20 offset ile aşağı taşınan miktar
+          const y = radius * (1 - Math.cos(angle)) * 0.35 + 30; 
           
           // Color based on position
           const colors = [
-            "text-red-600", "text-orange-500", "text-yellow-500", 
-            "text-green-600", "text-blue-600", "text-indigo-600", "text-purple-500"
+            "text-red-600","text-orange-500","text-yellow-500",
+            "text-green-600","text-blue-600","text-indigo-600","text-purple-500"
           ];
           const colorIndex = Math.floor((index / totalChars) * colors.length);
           

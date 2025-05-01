@@ -1,10 +1,14 @@
+// src/main.jsx
 import React, { useState, useEffect, createContext } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 import './index.css';
 import './i18n';
+
+// Auth ve Toast context’leri
 import { AuthProvider } from './contexts/AuthContext';
+import { ToastProvider } from './contexts/ToastContext';
 
 export const ThemeContext = createContext();
 
@@ -28,7 +32,10 @@ function Main() {
 
   return (
     <ThemeContext.Provider value={{ darkMode, toggleDark }}>
-      <App />
+      {/* 👉 ToastProvider burada sarmalıyor */}
+      <ToastProvider>
+        <App />
+      </ToastProvider>
     </ThemeContext.Provider>
   );
 }
